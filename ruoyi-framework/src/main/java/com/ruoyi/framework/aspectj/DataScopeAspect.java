@@ -102,6 +102,7 @@ public class DataScopeAspect
     {
         StringBuilder sqlString = new StringBuilder();
 
+        // 遍历当前用户的角色，获取全部角色中定义的数据权限范围（1234）
         for (SysRole role : user.getRoles())
         {
             String dataScope = role.getDataScope();
@@ -110,22 +111,26 @@ public class DataScopeAspect
                 sqlString = new StringBuilder();
                 break;
             }
+            // 自定义数据权限，把 role-dept 表中数据查出来加在 sql 最后
             else if (DATA_SCOPE_CUSTOM.equals(dataScope))
             {
                 sqlString.append(StringUtils.format(
                         " OR {}.dept_id IN ( SELECT dept_id FROM sys_role_dept WHERE role_id = {} ) ", deptAlias,
                         role.getRoleId()));
             }
+            // 本部门，接上 user.dept
             else if (DATA_SCOPE_DEPT.equals(dataScope))
             {
                 sqlString.append(StringUtils.format(" OR {}.dept_id = {} ", deptAlias, user.getDeptId()));
             }
+            // 本部门及以下，接上 user.dept 和 ancestors
             else if (DATA_SCOPE_DEPT_AND_CHILD.equals(dataScope))
             {
                 sqlString.append(StringUtils.format(
                         " OR {}.dept_id IN ( SELECT dept_id FROM sys_dept WHERE dept_id = {} or find_in_set( {} , ancestors ) )",
                         deptAlias, user.getDeptId(), user.getDeptId()));
             }
+            // 如果当前用户拥有的角色的数据权限是“仅本人“，并且不为空，添加一个 u.user_id = 登陆用户的userId
             else if (DATA_SCOPE_SELF.equals(dataScope))
             {
                 if (StringUtils.isNotBlank(userAlias))
@@ -140,6 +145,7 @@ public class DataScopeAspect
             }
         }
 
+        // sqlString 不空，有数据权限范围，把最开始的 OR 截掉送至切入点的的参数（搜索内容）
         if (StringUtils.isNotBlank(sqlString.toString()))
         {
             Object params = joinPoint.getArgs()[0];
