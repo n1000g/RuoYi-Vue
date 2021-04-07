@@ -22,16 +22,16 @@ create table sys_dept (
 -- ----------------------------
 -- 初始化-部门表数据
 -- ----------------------------
-insert into sys_dept values(100,  0,   '0',          '若依科技',   0, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(101,  100, '0,100',      '深圳总公司', 1, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(102,  100, '0,100',      '长沙分公司', 2, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(103,  101, '0,100,101',  '研发部门',   1, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(104,  101, '0,100,101',  '市场部门',   2, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(105,  101, '0,100,101',  '测试部门',   3, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(106,  101, '0,100,101',  '财务部门',   4, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(107,  101, '0,100,101',  '运维部门',   5, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(108,  102, '0,100,102',  '市场部门',   1, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
-insert into sys_dept values(109,  102, '0,100,102',  '财务部门',   2, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(100,  0,   '0',          '北京交通大学', 0, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(101,  100, '0,100',      '计算机学院', 1, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(102,  100, '0,100',      '软件学院', 2, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(103,  101, '0,100,101',  '数据结构课程组', 1, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(104,  101, '0,100,101',  '操作系统课程组', 2, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(105,  101, '0,100,101',  '计算机网络课程组', 3, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(106,  101, '0,100,101',  '计算机组成原理课程组', 4, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(107,  101, '0,100,101',  '面向对象程序设计课程组', 5, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(108,  102, '0,100,102',  '软件工程课程组', 1, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
+insert into sys_dept values(109,  102, '0,100,102',  '软件测试课程组', 2, '若依', '15888888888', 'ry@qq.com', '0', 'admin', sysdate(), '', null);
 
 
 -- ----------------------------
@@ -104,7 +104,7 @@ create table sys_role (
   role_name            varchar(30)     not null                   comment '角色名称',
   role_key             varchar(100)    not null                   comment '角色权限字符串',
   role_sort            int(4)          not null                   comment '显示顺序',
-  data_scope           char(1)         default '1'                comment '数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）',
+  data_scope           char(1)         default '5'                comment '数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限 5：仅本人数据权限）',
   menu_check_strictly  tinyint(1)      default 1                  comment '菜单树选择项是否关联显示',
   dept_check_strictly  tinyint(1)      default 1                  comment '部门树选择项是否关联显示',
   status               char(1)         not null                   comment '角色状态（0正常 1停用）',
@@ -119,8 +119,11 @@ create table sys_role (
 -- ----------------------------
 -- 初始化-角色信息表数据
 -- ----------------------------
-insert into sys_role values('1', '超级管理员',  'admin',  1, 1, 1, 1, '0', 'admin', sysdate(), '', null, '超级管理员');
-insert into sys_role values('2', '普通角色',    'common', 2, 2, 1, 1, '0', 'admin', sysdate(), '', null, '普通角色');
+insert into sys_role values('1', '超级管理员',  'admin',   1, 1, 1, 1, '0', 'admin', sysdate(), '', null, '超级管理员');
+insert into sys_role values('2', '一般管理员',  'common',  2, 2, 1, 1, '0', 'admin', sysdate(), '', null, '普通角色');
+insert into sys_role values('3', '考务管理员',  'test',    3, 4, 1, 1, '0', 'admin', sysdate(), '', null, '普通角色');
+insert into sys_role values('4', '教师用户',    'teacher', 4, 4, 1, 1, '0', 'admin', sysdate(), '', null, '普通角色');
+insert into sys_role values('5', '考生用户',    'student', 5, 5, 1, 1, '0', 'admin', sysdate(), '', null, '普通角色');
 
 
 -- ----------------------------
