@@ -8,7 +8,7 @@ import java.util.List;
  * 
  * @author ruoyi
  */
-public class TreeEntity extends BaseEntity
+public class TreeEntity<T> extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
@@ -25,7 +25,7 @@ public class TreeEntity extends BaseEntity
     private String ancestors;
 
     /** 子部门 */
-    private List<?> children = new ArrayList<>();
+    private List<T> children = new ArrayList<>();
 
     public String getParentName()
     {
@@ -67,12 +67,12 @@ public class TreeEntity extends BaseEntity
         this.ancestors = ancestors;
     }
 
-    public List<?> getChildren()
+    public List<T> getChildren()
     {
         return children;
     }
 
-    public void setChildren(List<?> children)
+    public void setChildren(List<T> children)
     {
         this.children = children;
     }

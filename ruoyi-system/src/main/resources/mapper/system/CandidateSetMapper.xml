@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.CandidateSetMapper">
+
+    <resultMap type="com.ruoyi.common.core.domain.entity.CandidateSet" id="CandidateSetResult">
+        <result property="candidateSetId"    column="candidate_set_id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="ancestors"    column="ancestors"    />
+        <result property="candidateSetName"    column="candidate_set_name"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <association property="dept" column="dept_id" javaType="com.ruoyi.common.core.domain.entity.SysDept" resultMap="deptResult" />
+    </resultMap>
+
+    <resultMap id="deptResult" type="com.ruoyi.common.core.domain.entity.SysDept">
+        <id     property="deptId"   column="dept_id"     />
+        <result property="parentId" column="parent_id"   />
+        <result property="deptName" column="dept_name"   />
+        <result property="orderNum" column="order_num"   />
+        <result property="leader"   column="leader"      />
+        <result property="status"   column="dept_status" />
+    </resultMap>
+
+    <sql id="selectCandidateSetVo">
+        select cs.candidate_set_id, cs.dept_id, cs.parent_id, cs.ancestors, cs.candidate_set_name, cs.order_num, cs.create_by, cs.create_time, cs.update_by, cs.update_time, d.dept_name
+        from candidate_set cs
+        left join sys_dept d on cs.dept_id = d.dept_id
+    </sql>
+
+    <select id="selectCandidateSetById" parameterType="Long" resultMap="CandidateSetResult">
+        <include refid="selectCandidateSetVo"/>
+        where cs.candidate_set_id = #{candidateSetId}
+    </select>
+
+    <select id="selectCandidateSetList" parameterType="com.ruoyi.common.core.domain.entity.CandidateSet" resultMap="CandidateSetResult">
+        <include refid="selectCandidateSetVo"/>
+        <where>
+            <if test="parentId != null ">
+                and cs.parent_id = #{parentId}
+            </if>
+            <if test="candidateSetName != null  and candidateSetName != ''">
+                and cs.candidate_set_name like concat('%', #{candidateSetName}, '%')
+            </if>
+            <if test="deptId != null and deptId != 0">
+                and (
+                    cs.dept_id = #{deptId} or cs.dept_id in (
+                        select t.dept_id from sys_dept t
+                        where find_in_set(#{deptId}, ancestors)
+                    )
+                )
+            </if>
+            <!-- 数据范围过滤 -->
+            ${params.dataScope}
+        </where>
+        order by cs.parent_id, cs.order_num
+    </select>
+
+    <select id="selectChildrenCandidateSetById" parameterType="Long" resultMap="CandidateSetResult">
+        <include refid="selectCandidateSetVo"/>
+        where find_in_set(#{candidateSetId}, cs.ancestors)
+    </select>
+
+    <select id="hasChildById" parameterType="Long" resultType="int">
+        select count(1) from candidate
+        where candidate_set_id = #{candidateSetId} limit 1
+    </select>
+
+    <select id="checkCandidateSetEmpty" parameterType="Long" resultType="int">
+        select count(1) from candidate where candidate_set_id = #{candidateSetId}
+    </select>
+
+    <insert id="insertCandidateSet" parameterType="com.ruoyi.common.core.domain.entity.CandidateSet" useGeneratedKeys="true" keyProperty="candidateSetId">
+        insert into candidate_set
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deptId != null">dept_id,</if>
+            <if test="parentId != null">parent_id,</if>
+            <if test="ancestors != null">ancestors,</if>
+            <if test="candidateSetName != null">candidate_set_name,</if>
+            <if test="orderNum != null">order_num,</if>
+            <if test="createBy != null">create_by,</if>
+            create_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deptId != null">#{deptId},</if>
+            <if test="parentId != null">#{parentId},</if>
+            <if test="ancestors != null">#{ancestors},</if>
+            <if test="candidateSetName != null">#{candidateSetName},</if>
+            <if test="orderNum != null">#{orderNum},</if>
+            <if test="createBy != null">#{createBy},</if>
+            sysdate()
+        </trim>
+    </insert>
+
+    <update id="updateCandidateSet" parameterType="com.ruoyi.common.core.domain.entity.CandidateSet">
+        update candidate_set
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="ancestors != null">ancestors = #{ancestors},</if>
+            <if test="candidateSetName != null">candidate_set_name = #{candidateSetName},</if>
+            <if test="orderNum != null">order_num = #{orderNum},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </trim>
+        where candidate_set_id = #{candidateSetId}
+    </update>
+
+    <update id="updateCandidateSetChildren" parameterType="java.util.List">
+        update candidate_set ancestors =
+        <foreach collection="candidateSets" item="item" index="index"
+                 separator=" " open="case candidate_set_id" close="end">
+            when #{item.candidateSetId} then #{item.ancestors}
+        </foreach>
+        where candidate_set_id in
+        <foreach collection="candidateSets" item="item" index="index"
+                 separator="," open="(" close=")">
+            #{item.candidate_set_id}
+        </foreach>
+    </update>
+
+    <delete id="deleteCandidateSetById" parameterType="Long">
+        delete from candidate_set where candidate_set_id = #{candidateSetId}
+    </delete>
+
+</mapper>
