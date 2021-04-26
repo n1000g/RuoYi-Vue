@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,7 +70,7 @@ public class CandidateSetServiceImpl implements ICandidateSetService {
     private List<CandidateSet> getChildList(List<CandidateSet> list, CandidateSet cs) {
         List<CandidateSet> csList = new ArrayList<>();
         for (CandidateSet n : list) {
-            if (StringUtils.isNotNull(n.getParentId()) && n.getParentId().longValue() == cs.getParentId().longValue()) {
+            if (StringUtils.isNotNull(n.getParentId()) && n.getParentId().longValue() == cs.getCandidateSetId().longValue()) {
                 csList.add(n);
             }
         }
@@ -100,6 +101,7 @@ public class CandidateSetServiceImpl implements ICandidateSetService {
         if (StringUtils.isNotNull(newParent) && StringUtils.isNotNull(oldCs)) {
             String newAncestors = newParent.getAncestors() + "," + newParent.getCandidateSetId();
             String oldAncestors = oldCs.getAncestors();
+            candidateSet.setAncestors(newAncestors);
             updateCandidateSetChildren(candidateSet.getCandidateSetId(), newAncestors, oldAncestors);
         }
         return candidateSetMapper.updateCandidateSet(candidateSet);

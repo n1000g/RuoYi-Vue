@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * 考生组对象 candidate_set
+ * 构造 TreeSelect 需要故在 common 而非 system
  */
 public class CandidateSet extends TreeEntity<CandidateSet> {
     private static final long serialVersionUID = 1L;

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.CandidateMapper">
+    
+    <resultMap type="com.ruoyi.common.core.domain.entity.Candidate" id="CandidateResult">
+        <result property="candidateId"    column="candidate_id"    />
+        <result property="candidateSetId"    column="candidate_set_id"    />
+        <result property="username"    column="username"    />
+        <result property="password"    column="password"    />
+        <result property="candidateName"    column="candidate_name"    />
+        <result property="email"    column="email"    />
+        <result property="phone"    column="phone"    />
+        <association property="candidateSet" column="candidate_set_id" javaType="com.ruoyi.common.core.domain.entity.CandidateSet" resultMap="CandidateSetResult"/>
+    </resultMap>
+
+    <resultMap type="com.ruoyi.common.core.domain.entity.CandidateSet" id="CandidateSetResult">
+        <result property="candidateSetId"    column="candidate_set_id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="parentId"    column="parent_id"    />
+        <result property="ancestors"    column="ancestors"    />
+        <result property="candidateSetName"    column="candidate_set_name"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <association property="dept" column="dept_id" javaType="com.ruoyi.common.core.domain.entity.SysDept" resultMap="deptResult" />
+    </resultMap>
+
+    <resultMap id="deptResult" type="com.ruoyi.common.core.domain.entity.SysDept">
+        <id     property="deptId"   column="dept_id"     />
+        <result property="parentId" column="parent_id"   />
+        <result property="deptName" column="dept_name"   />
+        <result property="orderNum" column="order_num"   />
+        <result property="leader"   column="leader"      />
+        <result property="status"   column="dept_status" />
+    </resultMap>
+
+    <sql id="selectCandidateVo">
+        select c.candidate_id, c.candidate_set_id, c.username, c.password, c.candidate_name, c.email, c.phone, cs.candidate_set_name, d.dept_name
+        from candidate c
+        left join candidate_set cs on c.candidate_set_id = cs.candidate_set_id
+        left join sys_dept d on cs.dept_id = d.dept_id
+    </sql>
+
+    <select id="selectCandidateList" parameterType="com.ruoyi.common.core.domain.entity.Candidate" resultMap="CandidateResult">
+        <include refid="selectCandidateVo"/>
+        <where>
+            <if test="username != null  and username != ''"> and username like concat('%', #{username}, '%')</if>
+            <if test="candidateName != null  and candidateName != ''"> and candidate_name like concat('%', #{candidateName}, '%')</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+            <if test="phone != null  and phone != ''"> and phone = #{phone}</if>
+            <if test="candidateSetId != null and candidateSetId != 0">
+                and (
+                    c.candidate_set_id = #{candidateSetId} or c.candidate_set_id in (
+                        select t.candidate_set_id from candidate_set t
+                        where find_in_set(#{candidateSetId}, ancestors)
+                    )
+                )
+            </if>
+            ${params.dataScope}
+        </where>
+    </select>
+    
+    <select id="selectCandidateById" parameterType="Long" resultMap="CandidateResult">
+        <include refid="selectCandidateVo"/>
+        where c.candidate_id = #{candidateId}
+    </select>
+
+    <select id="selectCandidateByUsername" parameterType="String" resultMap="CandidateResult">
+        <include refid="selectCandidateVo"/>
+        where c.username = #{username}
+    </select>
+        
+    <insert id="insertCandidate" parameterType="com.ruoyi.common.core.domain.entity.Candidate" useGeneratedKeys="true" keyProperty="candidateId">
+        insert into candidate
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="candidateSetId != null and candidateSetId != 0">candidate_set_id,</if>
+            <if test="username != null and username != ''">username,</if>
+            <if test="password != null">password,</if>
+            <if test="candidateName != null">candidate_name,</if>
+            <if test="email != null">email,</if>
+            <if test="phone != null">phone,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="candidateSetId != null and candidateSetId != 0">#{candidateSetId},</if>
+            <if test="username != null and username != ''">#{username},</if>
+            <if test="password != null">#{password},</if>
+            <if test="candidateName != null">#{candidateName},</if>
+            <if test="email != null">#{email},</if>
+            <if test="phone != null">#{phone},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCandidate" parameterType="com.ruoyi.common.core.domain.entity.Candidate">
+        update candidate
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="candidateSetId != null">candidate_set_id = #{candidateSetId},</if>
+            <if test="username != null and username != ''">username = #{username},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="candidateName != null">candidate_name = #{candidateName},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="phone != null">phone = #{phone},</if>
+        </trim>
+        where candidate_id = #{candidateId}
+    </update>
+
+    <update id="resetCandidatePwd" parameterType="com.ruoyi.common.core.domain.entity.Candidate">
+        update candidate set password = #{password} where username = #{username}
+    </update>
+
+    <delete id="deleteCandidateById" parameterType="Long">
+        delete from candidate where candidate_id = #{candidateId}
+    </delete>
+
+    <select id="checkUsernameUnique" parameterType="String" resultType="int">
+        select count(1) from candidate where username = #{username} limit 1
+    </select>
+
+</mapper>
