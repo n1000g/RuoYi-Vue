@@ -5,10 +5,9 @@ import com.ruoyi.common.core.domain.entity.CandidateSet;
 import org.apache.ibatis.annotations.Param;
 
 /**
- * 考生组Mapper接口
+ * 考生组 Mapper 接口
  */
-public interface CandidateSetMapper
-{
+public interface CandidateSetMapper {
     /** 根据ID查询考生组信息（伪需求） */
     CandidateSet selectCandidateSetById(Long candidateSetId);
 

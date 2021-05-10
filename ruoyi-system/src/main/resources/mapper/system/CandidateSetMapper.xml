@@ -113,15 +113,13 @@
     </update>
 
     <update id="updateCandidateSetChildren" parameterType="java.util.List">
-        update candidate_set ancestors =
-        <foreach collection="candidateSets" item="item" index="index"
-                 separator=" " open="case candidate_set_id" close="end">
+        update candidate_set set ancestors =
+        <foreach collection="candidateSets" item="item" index="index" separator=" " open="case candidate_set_id" close="end">
             when #{item.candidateSetId} then #{item.ancestors}
         </foreach>
         where candidate_set_id in
-        <foreach collection="candidateSets" item="item" index="index"
-                 separator="," open="(" close=")">
-            #{item.candidate_set_id}
+        <foreach collection="candidateSets" item="item" index="index" separator="," open="(" close=")">
+            #{item.candidateSetId}
         </foreach>
     </update>
 
